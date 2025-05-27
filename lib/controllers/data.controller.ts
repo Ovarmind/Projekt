@@ -25,9 +25,11 @@ class DataController implements Controller {
     }
 
     private getLatestReadingsFromAllDevices = async (request: Request, response: Response) => {
-        let output = testArr;
-        console.log(output)
-        response.json(output);
+        // let output = testArr;
+        // console.log(output)
+        // response.json(output);
+        const allData = await this.dataService.getAllNewest();
+        response.status(200).json(allData);
 }
 
     private addData = async (request: Request, response: Response) => {
@@ -88,9 +90,13 @@ class DataController implements Controller {
     }
 
     private usunall = async (request: Request, response: Response) => {
-        testArr.length = 0;
-        console.log(testArr);
-        response.json("DATA DELETED");
+        try {
+        const deletedCount = await this.dataService.deleteAllDevicesData();
+        response.status(200).json({ message: `Usunięto ${deletedCount} rekordów.` });
+    } catch (error) {
+        console.error("Błąd podczas usuwania danych:", error);
+        response.status(500).json({ error: "Wystąpił błąd podczas usuwania danych." });
+    }
     }
 
     private usunById = async (request: Request, response: Response) => {

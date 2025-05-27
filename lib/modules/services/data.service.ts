@@ -31,5 +31,40 @@ export default class DataService {
             throw new Error(`Query failed: ${error}`);
         }
      }
+
+     public async getAllNewest(): Promise<any[]> {
+    const latestData: any[] = [];
+
+    try {
+        const promises = Array.from({ length: 17 }, (_, i) =>
+            DataModel.find({ deviceId: i }, { __v: 0, _id: 0 })
+                .limit(1)
+                .sort({ $natural: -1 })
+                .then((entries) => {
+                    if (entries.length) {
+                        latestData.push(entries[0]);
+                    } else {
+                        latestData.push({ deviceId: i });
+                    }
+                })
+                .catch((error) => {
+                    console.error(`Błąd podczas pobierania danych dla urządzenia ${i}: ${error.message}`);
+                    latestData.push({ deviceId: i, error: true });
+                })
+        );
+
+        await Promise.all(promises);
+        return latestData;
+    } catch (err) {
+        throw new Error(`getAllNewest failed: ${err}`);
+    }
+}
+
+public async deleteAllDevicesData(): Promise<number> {
+    const ids = Array.from({ length: 17 }, (_, i) => i);
+    const result = await DataModel.deleteMany({ deviceId: { $in: ids } });
+    return result.deletedCount ?? 0;
+}
+
      }
      
